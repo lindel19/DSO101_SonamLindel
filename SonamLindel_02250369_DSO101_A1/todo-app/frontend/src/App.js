@@ -1,110 +1,126 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const API = process.env.REACT_APP_API_URL;
 
 function App() {
-  const [todos, setTodos] = useState([]);
-  const [task, setTask] = useState('');
-  const [editId, setEditId] = useState(null);
-  const [editTask, setEditTask] = useState('');
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState("");
+  const [editingId, setEditingId] = useState(null);
 
-  // Fetch all todos
-  const fetchTodos = async () => {
-    const res = await fetch(`${API}/todos`);
-    const data = await res.json();
-    setTodos(data);
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get(`${API}/tasks`);
+      setTasks(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      setTasks([]);
+    }
   };
 
-  useEffect(() => { fetchTodos(); }, []);
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
-  // Add a todo
-  const addTodo = async () => {
-    if (!task.trim()) return;
-    await fetch(`${API}/todos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ task }),
-    });
-    setTask('');
-    fetchTodos();
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+
+    try {
+      if (editingId) {
+        const oldTask = tasks.find((t) => t.id === editingId);
+
+        await axios.put(`${API}/tasks/${editingId}`, {
+          title,
+          completed: oldTask ? oldTask.completed : false,
+        });
+
+        setEditingId(null);
+      } else {
+        await axios.post(`${API}/tasks`, { title });
+      }
+
+      setTitle("");
+      fetchTasks();
+    } catch (error) {
+      console.error("Error saving task:", error);
+    }
   };
 
-  // Toggle complete
-  const toggleTodo = async (todo) => {
-    await fetch(`${API}/todos/${todo.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ task: todo.task, completed: !todo.completed }),
-    });
-    fetchTodos();
+  const handleEdit = (task) => {
+    setTitle(task.title);
+    setEditingId(task.id);
   };
 
-  // Save edit
-  const saveEdit = async (id) => {
-    await fetch(`${API}/todos/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ task: editTask, completed: false }),
-    });
-    setEditId(null);
-    fetchTodos();
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API}/tasks/${id}`);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
-  // Delete a todo
-  const deleteTodo = async (id) => {
-    await fetch(`${API}/todos/${id}`, { method: 'DELETE' });
-    fetchTodos();
+  const handleToggle = async (task) => {
+    try {
+      await axios.put(`${API}/tasks/${task.id}`, {
+        title: task.title,
+        completed: !task.completed,
+      });
+      fetchTasks();
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
   };
 
   return (
-    <div style={{ maxWidth: 500, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h1>📝 To-Do List</h1>
+    <div style={{ maxWidth: "600px", margin: "40px auto", fontFamily: "Arial" }}>
+      <h1>To-Do List</h1>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <input
-          value={task}
-          onChange={e => setTask(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && addTodo()}
-          placeholder="Add a new task..."
-          style={{ flex: 1, padding: 8, fontSize: 16 }}
+          type="text"
+          placeholder="Enter task"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          style={{ flex: 1, padding: "10px" }}
         />
-        <button onClick={addTodo} style={{ padding: '8px 16px' }}>Add</button>
+        <button onClick={handleSubmit}>
+          {editingId ? "Update" : "Add"}
+        </button>
       </div>
 
-      {todos.map(todo => (
-        <div key={todo.id} style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '10px', marginBottom: 8,
-          border: '1px solid #ddd', borderRadius: 6,
-          background: todo.completed ? '#f0f0f0' : '#fff'
-        }}>
-          <input
-            type="checkbox"
-            checked={todo.completed}
-            onChange={() => toggleTodo(todo)}
-          />
-          {editId === todo.id ? (
-            <>
-              <input
-                value={editTask}
-                onChange={e => setEditTask(e.target.value)}
-                style={{ flex: 1, padding: 4 }}
-              />
-              <button onClick={() => saveEdit(todo.id)}>Save</button>
-              <button onClick={() => setEditId(null)}>Cancel</button>
-            </>
-          ) : (
-            <>
-              <span style={{
-                flex: 1,
-                textDecoration: todo.completed ? 'line-through' : 'none'
-              }}>{todo.task}</span>
-              <button onClick={() => { setEditId(todo.id); setEditTask(todo.task); }}>Edit</button>
-              <button onClick={() => deleteTodo(todo.id)}>Delete</button>
-            </>
-          )}
-        </div>
-      ))}
+      {Array.isArray(tasks) && tasks.length > 0 ? (
+        tasks.map((task) => (
+          <div
+            key={task.id}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "10px",
+              border: "1px solid #ccc",
+              marginBottom: "10px",
+            }}
+          >
+            <span
+              onClick={() => handleToggle(task)}
+              style={{
+                cursor: "pointer",
+                textDecoration: task.completed ? "line-through" : "none",
+              }}
+            >
+              {task.title}
+            </span>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button onClick={() => handleEdit(task)}>Edit</button>
+              <button onClick={() => handleDelete(task.id)}>Delete</button>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>No tasks yet.</p>
+      )}
     </div>
   );
 }

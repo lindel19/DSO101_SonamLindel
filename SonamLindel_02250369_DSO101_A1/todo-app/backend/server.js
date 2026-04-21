@@ -1,81 +1,71 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// Database connection
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+let tasks = [
+  { id: 1, title: "First task", completed: false }
+];
+
+app.get("/", (req, res) => {
+  res.send("Backend is running");
 });
 
-// Create table if it doesn't exist
-pool.query(`
-  CREATE TABLE IF NOT EXISTS todos (
-    id SERIAL PRIMARY KEY,
-    task TEXT NOT NULL,
-    completed BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT NOW()
-  )
-`).then(() => console.log('Table ready'))
-  .catch(err => console.error('Table error:', err));
-
-// GET all todos
-app.get('/todos', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM todos ORDER BY created_at DESC');
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+app.get("/tasks", (req, res) => {
+  res.json(tasks);
 });
 
-// POST create a todo
-app.post('/todos', async (req, res) => {
-  try {
-    const { task } = req.body;
-    const result = await pool.query(
-      'INSERT INTO todos (task) VALUES ($1) RETURNING *',
-      [task]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+app.post("/tasks", (req, res) => {
+  const { title } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ message: "Title is required" });
   }
+
+  const newTask = {
+    id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
+    title,
+    completed: false
+  };
+
+  tasks.push(newTask);
+  res.status(201).json(newTask);
 });
 
-// PUT update a todo
-app.put('/todos/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { task, completed } = req.body;
-    const result = await pool.query(
-      'UPDATE todos SET task=$1, completed=$2 WHERE id=$3 RETURNING *',
-      [task, completed, id]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+app.put("/tasks/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { title, completed } = req.body;
+
+  const task = tasks.find((t) => t.id === id);
+
+  if (!task) {
+    return res.status(404).json({ message: "Task not found" });
   }
+
+  task.title = title ?? task.title;
+  task.completed = completed ?? task.completed;
+
+  res.json(task);
 });
 
-// DELETE a todo
-app.delete('/todos/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await pool.query('DELETE FROM todos WHERE id=$1', [id]);
-    res.json({ message: 'Deleted' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+app.delete("/tasks/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = tasks.findIndex((t) => t.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ message: "Task not found" });
   }
+
+  tasks.splice(index, 1);
+  res.json({ message: "Task deleted successfully" });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
