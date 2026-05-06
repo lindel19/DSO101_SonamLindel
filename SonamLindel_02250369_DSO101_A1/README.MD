@@ -1,1 +1,0 @@
-https://github.com/lindel19/DSO101_SonamLindel.git
