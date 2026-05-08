@@ -1,28 +1,31 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS'
-    }
-
     environment {
         DOCKERHUB_USERNAME = 'sonamlindel19'
         STUDENT_ID = '02250369'
-        BACKEND_IMAGE = "${sonamlindel19}/be-todo:${02250369}"
-        FRONTEND_IMAGE = "${sonamlindel19}/fe-todo:${02250369}"
+        BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/be-todo:${STUDENT_ID}"
+        FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/fe-todo:${STUDENT_ID}"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/lindel19/DSO101_SonamLindel_02250369.git'
+                url: 'https://github.com/lindel19/DSO101_SonamLindel.git'
+            }
+        }
+
+        stage('Check Node and NPM') {
+            steps {
+                bat 'node -v'
+                bat 'npm -v'
             }
         }
 
         stage('Install Backend Dependencies') {
             steps {
-                dir('backend') {
+                dir('todo-app/backend') {
                     bat 'npm install'
                 }
             }
@@ -30,7 +33,7 @@ pipeline {
 
         stage('Install Frontend Dependencies') {
             steps {
-                dir('frontend') {
+                dir('todo-app/frontend') {
                     bat 'npm install'
                 }
             }
@@ -38,7 +41,7 @@ pipeline {
 
         stage('Build Frontend') {
             steps {
-                dir('frontend') {
+                dir('todo-app/frontend') {
                     bat 'npm run build'
                 }
             }
@@ -46,21 +49,21 @@ pipeline {
 
         stage('Run Backend Tests') {
             steps {
-                dir('backend') {
+                dir('todo-app/backend') {
                     bat 'npm test'
                 }
             }
             post {
                 always {
-                    junit 'backend/junit.xml'
+                    junit 'todo-app/backend/junit.xml'
                 }
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                bat 'docker build -t %BACKEND_IMAGE% ./backend'
-                bat 'docker build -t %FRONTEND_IMAGE% ./frontend'
+                bat 'docker build -t %BACKEND_IMAGE% ./todo-app/backend'
+                bat 'docker build -t %FRONTEND_IMAGE% ./todo-app/frontend'
             }
         }
 
