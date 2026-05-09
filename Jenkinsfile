@@ -14,32 +14,32 @@ node {
     }
 
     stage('Install Backend Dependencies') {
-        dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/todo-app/backend') {
             bat 'npm install'
         }
     }
 
     stage('Install Frontend Dependencies') {
-        dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/todo-app/frontend') {
             bat 'npm install'
         }
     }
 
     stage('Build Frontend') {
-        dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/todo-app/frontend') {
             bat 'npm run build'
         }
     }
 
     stage('Run Backend Tests') {
-        dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/todo-app/backend') {
             bat 'npm test'
         }
     }
 
     stage('Build Docker Images') {
-        bat "docker build -t ${BACKEND_IMAGE} ./SonamLindel_02250369_DSO101_A1_and_A2/backend"
-        bat "docker build -t ${FRONTEND_IMAGE} ./SonamLindel_02250369_DSO101_A1_and_A2/frontend"
+        bat "docker build -t ${BACKEND_IMAGE} ./SonamLindel_02250369_DSO101_A1_and_A2/todo-app/backend"
+        bat "docker build -t ${FRONTEND_IMAGE} ./SonamLindel_02250369_DSO101_A1_and_A2/todo-app/frontend"
     }
 
     stage('Push Docker Images') {
