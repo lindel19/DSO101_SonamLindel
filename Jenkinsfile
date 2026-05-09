@@ -1,84 +1,56 @@
-pipeline {
-    agent any
+node {
+    def DOCKERHUB_USERNAME = 'sonamlindel19'
+    def STUDENT_ID = '02250369'
+    def BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/be-todo:${STUDENT_ID}"
+    def FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/fe-todo:${STUDENT_ID}"
 
-    environment {
-        DOCKERHUB_USERNAME = 'sonamlindel19'
-        STUDENT_ID = '02250369'
-        BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/be-todo:${STUDENT_ID}"
-        FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/fe-todo:${STUDENT_ID}"
+    stage('Checkout Code') {
+        checkout scm
     }
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                url: 'https://github.com/lindel19/DSO101_SonamLindel.git'
-            }
-        }
+    stage('Check Node and NPM') {
+        bat 'node -v'
+        bat 'npm -v'
+    }
 
-        stage('Check Node and NPM') {
-            steps {
-                bat 'node -v'
-                bat 'npm -v'
-            }
+    stage('Install Backend Dependencies') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
+            bat 'npm install'
         }
+    }
 
-        stage('Install Backend Dependencies') {
-            steps {
-                dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
-                    bat 'npm install'
-                }
-            }
+    stage('Install Frontend Dependencies') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
+            bat 'npm install'
         }
+    }
 
-        stage('Install Frontend Dependencies') {
-            steps {
-                dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
-                    bat 'npm install'
-                }
-            }
+    stage('Build Frontend') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
+            bat 'npm run build'
         }
+    }
 
-        stage('Build Frontend') {
-            steps {
-                dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
-                    bat 'npm run build'
-                }
-            }
+    stage('Run Backend Tests') {
+        dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
+            bat 'npm test'
         }
+    }
 
-        stage('Run Backend Tests') {
-            steps {
-                dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
-                    bat 'npm test'
-                }
-            }
-            post {
-                always {
-                    junit 'SonamLindel_02250369_DSO101_A1_and_A2/backend/junit.xml'
-                }
-            }
-        }
+    stage('Build Docker Images') {
+        bat "docker build -t ${BACKEND_IMAGE} ./SonamLindel_02250369_DSO101_A1_and_A2/backend"
+        bat "docker build -t ${FRONTEND_IMAGE} ./SonamLindel_02250369_DSO101_A1_and_A2/frontend"
+    }
 
-        stage('Build Docker Images') {
-            steps {
-                bat 'docker build -t %BACKEND_IMAGE% ./SonamLindel_02250369_DSO101_A1_and_A2/backend'
-                bat 'docker build -t %FRONTEND_IMAGE% ./SonamLindel_02250369_DSO101_A1_and_A2/frontend'
-            }
-        }
-
-        stage('Push Docker Images') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
-                    bat 'docker push %BACKEND_IMAGE%'
-                    bat 'docker push %FRONTEND_IMAGE%'
-                }
-            }
+    stage('Push Docker Images') {
+        withCredentials([usernamePassword(
+            credentialsId: 'docker-hub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+            bat "docker push ${BACKEND_IMAGE}"
+            bat "docker push ${FRONTEND_IMAGE}"
         }
     }
 }
