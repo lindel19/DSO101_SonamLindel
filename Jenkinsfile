@@ -4,8 +4,8 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = 'sonamlindel19'
         STUDENT_ID = '02250369'
-        BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/be-todo:${STUDENT_ID}"
-        FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/fe-todo:${STUDENT_ID}"
+        BACKEND_IMAGE = "${lindel19}/be-todo:${02250369}"
+        FRONTEND_IMAGE = "${lindel19}/fe-todo:${02250369}"
     }
 
     stages {
