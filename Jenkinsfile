@@ -4,8 +4,8 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = 'sonamlindel19'
         STUDENT_ID = '02250369'
-        BACKEND_IMAGE = "${lindel19}/be-todo:${02250369}"
-        FRONTEND_IMAGE = "${lindel19}/fe-todo:${02250369}"
+        BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/be-todo:${STUDENT_ID}"
+        FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/fe-todo:${STUDENT_ID}"
     }
 
     stages {
@@ -25,7 +25,7 @@ pipeline {
 
         stage('Install Backend Dependencies') {
             steps {
-                dir('todo-app/backend') {
+                dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
                     bat 'npm install'
                 }
             }
@@ -33,7 +33,7 @@ pipeline {
 
         stage('Install Frontend Dependencies') {
             steps {
-                dir('todo-app/frontend') {
+                dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
                     bat 'npm install'
                 }
             }
@@ -41,7 +41,7 @@ pipeline {
 
         stage('Build Frontend') {
             steps {
-                dir('todo-app/frontend') {
+                dir('SonamLindel_02250369_DSO101_A1_and_A2/frontend') {
                     bat 'npm run build'
                 }
             }
@@ -49,21 +49,21 @@ pipeline {
 
         stage('Run Backend Tests') {
             steps {
-                dir('todo-app/backend') {
+                dir('SonamLindel_02250369_DSO101_A1_and_A2/backend') {
                     bat 'npm test'
                 }
             }
             post {
                 always {
-                    junit 'todo-app/backend/junit.xml'
+                    junit 'SonamLindel_02250369_DSO101_A1_and_A2/backend/junit.xml'
                 }
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                bat 'docker build -t %BACKEND_IMAGE% ./todo-app/backend'
-                bat 'docker build -t %FRONTEND_IMAGE% ./todo-app/frontend'
+                bat 'docker build -t %BACKEND_IMAGE% ./SonamLindel_02250369_DSO101_A1_and_A2/backend'
+                bat 'docker build -t %FRONTEND_IMAGE% ./SonamLindel_02250369_DSO101_A1_and_A2/frontend'
             }
         }
 
