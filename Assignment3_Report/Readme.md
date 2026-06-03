@@ -19,7 +19,7 @@ The main objective of this assignment was to transition from manual deployments 
 
 # Project Overview
 
-The project focuses on creating an automated pipeline using the backend API (Node.js + Express.js) developed in previous assignments. 
+The assignment focuses on creating an automated pipeline using the backend API (Node.js + Express.js) developed in previous assignments. 
 
 The CI/CD pipeline consists of the following automated stages triggered upon every push to the `main` branch:
 - Source Control: Code is pushed to GitHub.

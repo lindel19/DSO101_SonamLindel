@@ -59,37 +59,6 @@ docker help            # List available commands and usage
 
 ---
 
-## Docker Lab
-
-### Lab: Basic Commands
-
-This lab consists of 17 questions. Answers are documented below according to their respective question numbers.
-
-1. 25.0.5
-2. 0
-3. 9
-
-4. <img src="Images/lab1_1.png" alt=" ">
-5. <img src="Images/lab1_5.png" alt=" ">
-6. 0
-7. 4
-8. 6
-9. nginx:alpine
-10. awesome_northcut
-11. 866
-12. Exited
-13. <img src="Images/lab1_13.png" alt=" ">
-14. <img src="Images/lab1_14.png" alt=" ">
-15. <img src="Images/lab1_15.png" alt=" ">
-
-16. <img src="Images/lab1_16.png" alt=" ">
-
-### Lab Completion
-
-<img src="Images/labsuccess1.png" alt=" ">
-
----
-
 # Unit 2: Docker Images and Containers
 
 ## Docker Images
@@ -178,35 +147,6 @@ docker exec <container_id> cat /etc/os-release
 ```bash
 docker exec -it <container_id> bash
 ```
-
----
-
-## Docker Lab
-
-### Lab: Docker Images
-
-Answers:
-
-1. 9
-2. 7.81 MB
-3. 1.14 - alpine
-4. python:3.6
-5. /opt
-6. python app.py
-7. 8080
-8. <img src="Images/lab2_8.png" alt=" ">
-9. `docker run -p 8282:8080 webapp-color`
-10. -
-11. -
-12. 920 MB
-13. <img src="Images/lab2_13.png" alt=" ">
-14. <img src="Images/lab2_14.png" alt=" ">
-15. <img src="Images/lab2_15.png" alt=" ">
-
-### Lab Completion
-
-<img src="Images/labsuccess2.png" alt=" ">
-
 ---
 
 # Unit 3: Dockerfile and Docker Compose
